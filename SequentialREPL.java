@@ -3,9 +3,23 @@ package cs131.pa1.filter.sequential;
 import java.io.File;
 import java.util.*;
 
+import cs131.pa1.filter.Filter;
+import cs131.pa1.filter.Message;
+
 public class SequentialREPL {
 
-	static String currentWorkingDirectory;
+	static String currentWorkingDirectory = "C:"+ Filter.FILE_SEPARATOR +
+			"Users"+ Filter.FILE_SEPARATOR + "colin"+ Filter.FILE_SEPARATOR 
+			+ "Desktop"+ Filter.FILE_SEPARATOR 
+			+ "OS_PS1-master"+ Filter.FILE_SEPARATOR
+			+ "cs131a_PA1_Part1_StarterKit"+ Filter.FILE_SEPARATOR
+			+ "cs131a_PA1_Part1_StarterKit"+ Filter.FILE_SEPARATOR
+			+ "src"+ Filter.FILE_SEPARATOR 
+			+ "cs131"+ Filter.FILE_SEPARATOR 
+			+ "pa1"+ Filter.FILE_SEPARATOR
+			+ "filter"+ Filter.FILE_SEPARATOR 
+			+ "sequential";
+	
 	/*
 	Todo:
 	1. print >
@@ -23,9 +37,9 @@ public class SequentialREPL {
 	public static void main(String[] args){
 		//Takes in users command(s) as a string 
 		boolean exit = false; 
-		
+		System.out.print(Message.WELCOME);
 		while(!exit) {
-		System.out.println(">");
+		System.out.print(Message.NEWCOMMAND);
 		Scanner console = new Scanner (System.in);
 		String userInput = console.nextLine();
 	
@@ -34,7 +48,7 @@ public class SequentialREPL {
 		//We have to escape the pipe character because it has a different meaning alone
 		String[] commands = userInput.split("\\|"); 
 		System.out.print(Arrays.toString(commands));
-		boolean noError; 
+		boolean noError=true; 
 		
 		int numCommands = commands.length; 
 		//Loop checks each command for both a valid command AND a file 
@@ -55,6 +69,15 @@ public class SequentialREPL {
 				x = numCommands; 
 				noError= false;
 			}
+			
+		}
+		//feed our array of commands into the sequential command builder
+		if(noError) {
+			SequentialCommandBuilder command = new SequentialCommandBuilder(commands); 
+			
+			
+			
+			
 			
 		}
 		
@@ -79,7 +102,7 @@ public class SequentialREPL {
 			
 			//tests for an undefined command by ensuring the first set is actually a command
 			if (!singleCommand[0].matches("pwd|ls|cd|cat|grep|wc|uniq|exit|>|")){
-				System.out.println("The command [" + singleCommand[0]  + "] was not recognized." );
+				System.out.print(Message.FILE_NOT_FOUND.with_parameter(singleCommand[0]) );
 				return true; 
 				  
 			}
@@ -100,7 +123,7 @@ public class SequentialREPL {
 			//if there is no second phrase in a command block it is an invalid piping order
 			//this also avoids an out of bounds error
 			if( singleCommand.length<=1) {
-				System.out.println("The command [" + singleCommand[0]  + "] requires input." );
+				System.out.print(Message.REQUIRES_INPUT.with_parameter(singleCommand[0]) );
 				return true; 
 				
 				}
@@ -108,7 +131,7 @@ public class SequentialREPL {
 			//makes sure there is a file to look for by checking for .txt
 			int length = singleCommand[1].length(); 
 			if (length<=4 || !singleCommand[1].substring(length-4).equals(".txt")) {
-				System.out.println("The command [" + singleCommand[0]  + "] is missing an argument." );
+				System.out.print(Message.REQUIRES_PARAMETER.with_parameter(singleCommand[0]) );
 				return true; 
 				
 			}
@@ -129,20 +152,24 @@ public class SequentialREPL {
 		if(!singleCommand[0].matches("cd|ls|pwd")) {
 			File file = new File (singleCommand[1]); 
 			if(!file.exists()) {
-				System.out.println("At least one of the files in the command [" + s + "] was not found");
+				System.out.print(Message.FILE_NOT_FOUND.with_parameter(s)); 
+				
 				return true; 
 			}
+		}
+		if(singleCommand[0].matches("cd|ls|pwd") && singleCommand.length>1) {
+			System.out.print(Message.CANNOT_HAVE_INPUT.with_parameter(singleCommand[0]));
 		}
 		//checks to see if current directory or new directory exists. 
 		if(singleCommand[0].matches("cd")) {
 			if(singleCommand.length!=1) {
 			currentWorkingDirectory = singleCommand[1]; }
-			else { System.out.println("Please type a directory");}
+			else { 	System.out.print(Message.REQUIRES_PARAMETER.with_parameter(singleCommand[0]));}
 		}
 		if(currentWorkingDirectory!=null) {
 		File directory = new File (currentWorkingDirectory); 
 		if(!directory.isDirectory()) {
-			System.out.println("The directory specified by the command [" + s + "] was not found.");
+			System.out.print(Message.DIRECTORY_NOT_FOUND.with_parameter(s));
 			return true;
 		}
 		}
@@ -157,7 +184,7 @@ public class SequentialREPL {
 		String [] singleCommand = s.trim().split("\\s+"); 
 		
 		if(singleCommand[0].equals("exit")){
-			System.out.println("Thank you for using the Unix-ish command line. Goodbye!");
+			System.out.print(Message.GOODBYE);
 			return true;
 		}
 		return false; 
